@@ -1,0 +1,529 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Index - BreatheWell</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="{% static 'wind.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+        <!-- Uncomment the line below if you also wish to use an image logo -->
+        <!-- <img src="{% static 'assets/img/logo.webp' %}" alt=""> -->
+        <img src="{% static 'assets/img/wind.png' %}" alt="BreatheWell Logo" class="img-fluid" style="width: 32px; height: 32px; margin-right: 8px;">
+
+
+        <h1 class="sitename">BreatheWell</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="/" class="active">Index</a></li>
+          <li><a href="about.html">About</a></li>
+          
+          <li><a href="services.html">Services</a></li>
+          <!-- <li class="dropdown"><a href="#"><span>More Pages</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="department-details.html">Department Details</a></li>
+              <li><a href="service-details.html">Service Details</a></li>
+              <li><a href="login.html">Get Started</a></li>
+              <li><a href="testimonials.html">Testimonials</a></li>
+              <li><a href="faq.html">Frequently Asked Questions</a></li>
+              <li><a href="gallery.html">Gallery</a></li>
+              <li><a href="terms.html">Terms</a></li>
+              <li><a href="privacy.html">Privacy</a></li>
+              <li><a href="404.html">404</a></li>
+            </ul> -->
+          </li>
+          <!-- <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="#">Dropdown 1</a></li>
+              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                <ul>
+                  <li><a href="#">Deep Dropdown 1</a></li>
+                  <li><a href="#">Deep Dropdown 2</a></li>
+                  <li><a href="#">Deep Dropdown 3</a></li>
+                  <li><a href="#">Deep Dropdown 4</a></li>
+                  <li><a href="#">Deep Dropdown 5</a></li>
+                </ul>
+              </li>
+              <li><a href="#">Dropdown 2</a></li>
+              <li><a href="#">Dropdown 3</a></li>
+              <li><a href="#">Dropdown 4</a></li>
+            </ul>
+          </li> -->
+          <li><a href="/register/">Registration</a></li>
+          <li><a href="/login/">Login Now</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section dark-background">
+      <div class="container-fluid p-0">
+        <div class="hero-wrapper">
+          <div class="hero-image">
+            <img src="{% static 'assets/img/health/indexpage.jpg' %}" alt="Advanced Healthcare" class="img-fluid">
+          </div>
+
+          <div class="hero-content">
+            <div class="container">
+              <div class="row">
+                <div class="col-lg-7 col-md-10" data-aos="fade-right" data-aos-delay="100">
+                  <div class="content-box">
+                    <span class="badge-accent" data-aos="fade-up" data-aos-delay="150">Smart Water Quality and Health Risk Monitoring</span>
+                    <h1 data-aos="fade-up" data-aos-delay="200">Real-Time Personalized Water Quality and Health Risk Monitoring</h1>
+                    <p data-aos="fade-up" data-aos-delay="250">Track your Water pollution exposure & health risks instantly using smart sensors and AI-powered predictions.</p>
+
+                    <div class="cta-group" data-aos="fade-up" data-aos-delay="300">
+                      <a href="/login/" class="btn btn-primary">Sign in</a>
+                      <a href="/register/" class="btn btn-outline">Sign up</a>
+                    </div>
+
+                    <div class="info-badges" data-aos="fade-up" data-aos-delay="350">
+                      <div class="badge-item">
+                       
+                        <div class="badge-content">
+                          <span></span>
+                          <strong></strong>
+                        </div>
+                      </div>
+                      <div class="badge-item">
+                       
+                        <div class="badge-content">
+                          <span></span>
+                          <strong></strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="features-wrapper">
+                <div class="row gy-4">
+
+                  <div class="col-lg-4">
+                    <div class="feature-item" data-aos="fade-up" data-aos-delay="450">
+                      <div class="feature-icon">
+                        <img src="{% static 'assets/img/real time Data.png' %}" alt="Icon" style="width: 48px; height: 48px;">
+                      </div>
+                      <div class="feature-text">
+                        <h3>Real-time Data</h3>
+                        <p>View real-time Water quality using sensors</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-4">
+                    <div class="feature-item" data-aos="fade-up" data-aos-delay="500">
+                      <div class="feature-icon">
+                        <img src="{% static 'assets/img/risk.png' %}" alt="Icon" style="width: 48px; height: 48px;">
+                      </div>
+                      <div class="feature-text">
+                        <h3>Risk Level</h3>
+                        <p>Get your Water quality continuously monitored</p>
+                      </div>
+                    </div>
+                  </div>
+
+                   <div class="col-lg-4">
+                    <div class="feature-item" data-aos="fade-up" data-aos-delay="500">
+                      <div class="feature-icon">
+                        <img src="{% static 'assets/img/personalized advisory.png' %}" alt="Icon" style="width: 48px; height: 48px;">
+                      </div>
+                      <div class="feature-text">
+                        <h3>Personalized Health Advisory</h3>
+                        <p>Get your Water quality continuously monitored</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-4">
+                    <div class="feature-item" data-aos="fade-up" data-aos-delay="550">
+                      <div class="feature-icon">
+                        <img src="{% static 'assets/img/forecast.png' %}" alt="Icon" style="width: 48px; height: 48px;">
+                      </div>
+                      <div class="feature-text">
+                        <h3>Forecast</h3>
+                        <p>ML-driven personalized health risk alerts  </p>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- /Hero Section -->
+
+    <!-- Home About Section -->
+    <section id="home-about" class="home-about section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-5 align-items-center">
+          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+            <div class="about-image">
+              <img src="{% static 'assets/img/health/facilities-1.webp' %}" alt="Modern Healthcare Facility" class="img-fluid rounded-3 mb-4">
+
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+            <div class="about-content">
+              <h2>Personalized Water Quality and Health Risk Monitoring</h2>
+              <p class="lead">Monitor your personal exposure to Water pollutants and vital health metrics in real-time using smart sensors and AI-driven risk prediction models. Get immediate alerts and suggestions tailored for Normal, Asthma, and COPD patients</p>
+
+              <p></p>
+
+              
+              <div class="cta-wrapper mt-4">
+                <a href="about.html" class="btn btn-primary">Learn More About Us</a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+       
+
+      </div>
+
+    </section><!-- /Home About Section -->
+
+    <!-- Featured Departments Section -->
+    
+
+    <!-- Featured Services Section -->
+    
+
+    <!-- Find A Doctor Section -->
+    
+
+    <!-- Call To Action Section -->
+    
+    <!-- Emergency Info Section -->
+    <section id="emergency-info" class="emergency-info section">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Emergency Info</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row">
+          <div class="col-lg-8 col-md-10 mx-auto">
+
+            <!-- Emergency Alert Banner -->
+            <div class="emergency-alert" data-aos="zoom-in" data-aos-delay="100">
+              <div class="alert-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+              </div>
+              <div class="alert-content">
+                <h3>Medical Emergency?</h3>
+                <p>If you are experiencing a life-threatening emergency, call 911 immediately or go to your nearest emergency room.</p>
+              </div>
+              <div class="alert-action">
+                <a href="{% static 'tel:911' %}" class="btn btn-emergency">
+                  <i class="bi bi-telephone-fill"></i>
+                  Call 911
+                </a>
+              </div>
+            </div><!-- End Emergency Alert -->
+
+            <!-- Emergency Contact Grid -->
+            <div class="row emergency-contacts" data-aos="fade-up" data-aos-delay="200">
+
+              <div class="col-md-6 mb-4">
+                <div class="contact-card urgent">
+                  <div class="card-icon">
+                    <i class="bi bi-hospital"></i>
+                  </div>
+                  <div class="card-content">
+                    <h4>Emergency Room</h4>
+                    <p class="contact-info">
+                      <i class="bi bi-telephone"></i>
+                      <span>+1 (555) 123-4567</span>
+                    </p>
+                    <p class="address">
+                      <i class="bi bi-geo-alt"></i>
+                      1245 Healthcare Blvd, Medical City, CA 90210
+                    </p>
+                    <p class="hours">Open 24/7</p>
+                  </div>
+                  <div class="card-action">
+                    <a href="{% static 'tel:+15551234567' %}" class="btn btn-contact">Call Now</a>
+                  </div>
+                </div>
+              </div><!-- End Emergency Room Card -->
+
+              <div class="col-md-6 mb-4">
+                <div class="contact-card">
+                  <div class="card-icon">
+                    <i class="bi bi-clock"></i>
+                  </div>
+                  <div class="card-content">
+                    <h4>Urgent Care</h4>
+                    <p class="contact-info">
+                      <i class="bi bi-telephone"></i>
+                      <span>+1 (555) 987-6543</span>
+                    </p>
+                    <p class="address">
+                      <i class="bi bi-geo-alt"></i>
+                      892 Wellness Ave, Health District, CA 90211
+                    </p>
+                    <p class="hours">Mon-Sun: 7:00 AM - 10:00 PM</p>
+                  </div>
+                  <div class="card-action">
+                    <a href="{% static 'tel:+15559876543' %}" class="btn btn-contact">Call Now</a>
+                  </div>
+                </div>
+              </div><!-- End Urgent Care Card -->
+
+              <div class="col-md-6 mb-4">
+                <div class="contact-card">
+                  <div class="card-icon">
+                    <i class="bi bi-headset"></i>
+                  </div>
+                  <div class="card-content">
+                    <h4>Nurse Helpline</h4>
+                    <p class="contact-info">
+                      <i class="bi bi-telephone"></i>
+                      <span>+1 (555) 456-7890</span>
+                    </p>
+                    <p class="description">24/7 medical advice and guidance</p>
+                    <p class="hours">Available 24/7</p>
+                  </div>
+                  <div class="card-action">
+                    <a href="{% static 'tel:+15554567890' %}" class="btn btn-contact">Call Now</a>
+                  </div>
+                </div>
+              </div><!-- End Nurse Helpline Card -->
+
+              <div class="col-md-6 mb-4">
+                <div class="contact-card">
+                  <div class="card-icon">
+                    <i class="bi bi-heart-pulse"></i>
+                  </div>
+                  <div class="card-content">
+                    <h4>Poison Control</h4>
+                    <p class="contact-info">
+                      <i class="bi bi-telephone"></i>
+                      <span>1-800-222-1222</span>
+                    </p>
+                    <p class="description">National poison control hotline</p>
+                    <p class="hours">Available 24/7</p>
+                  </div>
+                  <div class="card-action">
+                    <a href="{% static 'tel:18002221222' %}" class="btn btn-contact">Call Now</a>
+                  </div>
+                </div>
+              </div><!-- End Poison Control Card -->
+
+            </div><!-- End Emergency Contacts -->
+
+            <!-- Quick Actions -->
+            <div class="quick-actions" data-aos="fade-up" data-aos-delay="300">
+              <h4>Quick Actions</h4>
+              <div class="row">
+                <div class="col-sm-6 col-lg-3">
+                  <a href="#" class="action-link">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>Get Directions</span>
+                  </a>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <a href="#" class="action-link">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Book Appointment</span>
+                  </a>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <a href="#" class="action-link">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Find a Doctor</span>
+                  </a>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <a href="#" class="action-link">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Live Chat</span>
+                  </a>
+                </div>
+              </div>
+            </div><!-- End Quick Actions -->
+
+            <!-- Emergency Preparation Tips -->
+            <div class="emergency-tips" data-aos="fade-up" data-aos-delay="400">
+              <h4>When to Seek Emergency Care</h4>
+              <div class="row">
+                <div class="col-md-6">
+                  <ul class="emergency-list">
+                    <li><i class="bi bi-check-circle"></i> Chest pain or difficulty breathing</li>
+                    <li><i class="bi bi-check-circle"></i> Severe allergic reactions</li>
+                    <li><i class="bi bi-check-circle"></i> Major trauma or injuries</li>
+                    <li><i class="bi bi-check-circle"></i> Signs of stroke or heart attack</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <ul class="emergency-list">
+                    <li><i class="bi bi-check-circle"></i> Severe burns or bleeding</li>
+                    <li><i class="bi bi-check-circle"></i> Loss of consciousness</li>
+                    <li><i class="bi bi-check-circle"></i> Severe abdominal pain</li>
+                    <li><i class="bi bi-check-circle"></i> High fever with confusion</li>
+                  </ul>
+                </div>
+              </div>
+            </div><!-- End Emergency Tips -->
+
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Emergency Info Section -->
+
+  </main>
+
+  <footer id="footer" class="footer position-relative light-background">
+
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="logo d-flex align-items-center">
+            <span class="sitename">BreatheEasy</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>A108 Adam Street</p>
+            <p>New York, NY 535022</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
+            <p><strong>Email:</strong> <span>info@example.com</span></p>
+          </div>
+          <div class="social-links d-flex mt-4">
+            <a href=""><i class="bi bi-twitter-x"></i></a>
+            <a href=""><i class="bi bi-facebook"></i></a>
+            <a href=""><i class="bi bi-instagram"></i></a>
+            <a href=""><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Useful Links</h4>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About us</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Terms of service</a></li>
+            <li><a href="#">Privacy policy</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Our Services</h4>
+          <ul>
+            <li><a href="#">Web Design</a></li>
+            <li><a href="#">Web Development</a></li>
+            <li><a href="#">Product Management</a></li>
+            <li><a href="#">Marketing</a></li>
+            <li><a href="#">Graphic Design</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Hic solutasetp</h4>
+          <ul>
+            <li><a href="#">Molestiae accusamus iure</a></li>
+            <li><a href="#">Excepturi dignissimos</a></li>
+            <li><a href="#">Suscipit distinctio</a></li>
+            <li><a href="#">Dilecta</a></li>
+            <li><a href="#">Sit quas consectetur</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Nobis illum</h4>
+          <ul>
+            <li><a href="#">Ipsam</a></li>
+            <li><a href="#">Laudantium dolorum</a></li>
+            <li><a href="#">Dinera</a></li>
+            <li><a href="#">Trodelas</a></li>
+            <li><a href="#">Flexo</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">MyWebsite</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you've purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
+        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+
+</html>

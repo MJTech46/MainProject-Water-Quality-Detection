@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Quality — Turbidity & RI Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 24px; background:#f7fafc; color:#0f172a }
+    .container { max-width: 1000px; margin: 0 auto }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px }
+    h1 { font-size:20px; margin:0 }
+    .card { background:white; border-radius:12px; box-shadow:0 6px 20px rgba(2,6,23,0.08); padding:16px; margin-bottom:16px }
+    table { width:100%; border-collapse:collapse; font-size:14px }
+    thead th { text-align:left; padding:8px 12px; border-bottom:1px solid #e6edf3; color:#0b1220 }
+    tbody td { padding:10px 12px; border-bottom:1px dashed #edf2f7 }
+    .badge { display:inline-block; padding:6px 8px; border-radius:8px; font-weight:600 }
+    .good { background:#ecfdf5; color:#027a48 }
+    .moderate { background:#fffbeb; color:#92400e }
+    .poor { background:#fff7f0; color:#b42318 }
+    form { display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+    input[type="number"], input[type="text"] { padding:8px 10px; border-radius:8px; border:1px solid #dbe7f0; width:120px }
+    button { background:#0ea5a0; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer }
+    .flex { display:flex; gap:12px; align-items:center }
+    .muted { color:#475569; font-size:13px }
+    #chartWrap { height:360px }
+    @media (max-width:720px) { input[type="number"] { width:100% } form { flex-direction:column; align-items:stretch } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Water Quality — Turbidity & Refactor Index (RI)</h1>
+      <div class="muted">Simple demo page — add readings to update table & chart</div>
+    </header>
+
+    <div class="card">
+      <form id="readingForm">
+        <input type="datetime-local" id="ts" />
+        <input type="number" id="turbidity" placeholder="Turbidity (NTU)" step="0.1" required />
+        <input type="number" id="ph" placeholder="pH" step="0.01" required />
+        <input type="number" id="do" placeholder="DO (mg/L)" step="0.01" required />
+        <div class="flex">
+          <button type="submit">Add Reading</button>
+        </div>
+      </form>
+      <div class="muted" style="margin-top:8px">Equation used: <code>RI = 100 × (1 - turb/NTUmax) × (1 - |pH - 7|/ΔpH) × (DO/DOref)</code></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Readings</h3>
+      <div style="overflow:auto">
+        <table id="readingsTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Turbidity (NTU)</th>
+              <th>pH</th>
+              <th>DO (mg/L)</th>
+              <th>RI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Trend Chart</h3>
+      <div id="chartWrap">
+        <canvas id="trendChart" width="1000" height="360"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Parameters for RI equation
+    const NTU_MAX = 1000.0;
+    const DELTA_PH = 3.0;
+    const DO_REF = 9.0;
+
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+    function computeRI(turb, ph, do_mg){
+      const turbFactor = 1 - (turb / NTU_MAX);
+      const phFactor = 1 - (Math.abs(ph - 7) / DELTA_PH);
+      const doFactor = do_mg / DO_REF;
+      let ri = 100 * turbFactor * phFactor * doFactor;
+      if (!isFinite(ri)) ri = 0;
+      ri = Math.max(0, Math.min(100, ri));
+      return Math.round(ri * 10) / 10; // one decimal
+    }
+
+    // sample data
+    const readings = [
+      {ts: '2025-09-01T09:00', turb: 12.0, ph: 7.5, do: 6.2},
+      {ts: '2025-09-02T09:00', turb: 25.0, ph: 7.2, do: 5.8},
+      {ts: '2025-09-03T09:00', turb: 55.0, ph: 6.9, do: 6.0},
+      {ts: '2025-09-04T09:00', turb: 40.0, ph: 7.1, do: 5.5},
+      {ts: '2025-09-05T09:00', turb: 18.0, ph: 7.4, do: 6.5}
+    ];
+
+    // DOM refs
+    const tbody = document.querySelector('#readingsTable tbody');
+    const form = document.getElementById('readingForm');
+    const tsInput = document.getElementById('ts');
+    const turbInput = document.getElementById('turbidity');
+    const phInput = document.getElementById('ph');
+    const doInput = document.getElementById('do');
+
+    function riCategory(ri){
+      if (ri >= 80) return ['Good', 'good'];
+      if (ri >= 50) return ['Moderate', 'moderate'];
+      if (ri >= 25) return ['Poor', 'poor'];
+      return ['Bad', 'poor'];
+    }
+
+    function renderTable(){
+      tbody.innerHTML = '';
+      readings.slice().reverse().forEach(r => {
+        const ri = computeRI(r.turb, r.ph, r.do);
+        const tr = document.createElement('tr');
+        const tdTs = document.createElement('td'); tdTs.textContent = (new Date(r.ts)).toLocaleString();
+        const tdTurb = document.createElement('td'); tdTurb.textContent = r.turb.toFixed(1);
+        const tdPh = document.createElement('td'); tdPh.textContent = r.ph.toFixed(2);
+        const tdDo = document.createElement('td'); tdDo.textContent = r.do.toFixed(2);
+        const tdRi = document.createElement('td');
+        const [label, cls] = riCategory(ri);
+        const span = document.createElement('span');
+        span.className = 'badge ' + (cls === 'good' ? 'good' : (cls === 'moderate' ? 'moderate' : 'poor'));
+        span.textContent = ri + ' — ' + label;
+        tdRi.appendChild(span);
+
+        tr.appendChild(tdTs); tr.appendChild(tdTurb); tr.appendChild(tdPh); tr.appendChild(tdDo); tr.appendChild(tdRi);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Chart setup
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: readings.map(r => r.ts),
+        datasets: [
+          { label: 'Turbidity (NTU)', data: readings.map(r => r.turb), yAxisID: 'y1', tension:0.25, pointRadius:4 },
+          { label: 'RI', data: readings.map(r => computeRI(r.turb, r.ph, r.do)), yAxisID: 'y2', tension:0.25, pointRadius:4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode:'index', intersect:false },
+        scales: {
+          y1: { type:'linear', position:'left', title:{display:true, text:'Turbidity (NTU)'} },
+          y2: { type:'linear', position:'right', min:0, max:100, title:{display:true, text:'Refactor Index (RI)'} }
+        },
+        plugins:{ legend:{ display:true } }
+      }
+    });
+
+    function updateChart(){
+      chart.data.labels = readings.map(r => r.ts);
+      chart.data.datasets[0].data = readings.map(r => r.turb);
+      chart.data.datasets[1].data = readings.map(r => computeRI(r.turb, r.ph, r.do));
+      chart.update();
+    }
+
+    form.addEventListener('submit', (e) =>{
+      e.preventDefault();
+      const ts = tsInput.value || new Date().toISOString();
+      const turb = parseFloat(turbInput.value);
+      const ph = parseFloat(phInput.value);
+      const do_v = parseFloat(doInput.value);
+      if (isNaN(turb) || isNaN(ph) || isNaN(do_v)) return alert('Please enter valid numbers');
+      readings.push({ ts, turb, ph, do: do_v });
+      renderTable(); updateChart();
+      form.reset();
+    });
+
+    // initial render
+    renderTable(); updateChart();
+  </script>
+</body>
+</html>

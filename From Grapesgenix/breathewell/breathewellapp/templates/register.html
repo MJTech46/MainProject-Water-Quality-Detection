@@ -1,0 +1,220 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Registration | Breathewell</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap');
+
+    /* Body & Background */
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('{% static "assets/img/health/background.jpg" %}') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Dark overlay */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 0;
+    }
+
+    /* Registration Card */
+    .register-form {
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      padding: 28px 32px;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+      width: 340px;
+      max-width: 95%;
+      z-index: 1;
+      animation: fadeInUp 0.9s ease;
+    }
+
+    @keyframes fadeInUp {
+      0% {opacity:0; transform: translateY(30px);}
+      100% {opacity:1; transform: translateY(0);}
+    }
+
+    /* Title */
+    .register-form h2 {
+      text-align: center;
+      margin-bottom: 22px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Inputs & Textarea */
+    .register-form input, .register-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 8px 0 14px 0;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.95);
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .register-form input:focus, .register-form textarea:focus {
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(52,152,219,0.5);
+    }
+
+    /* Gender */
+    .gender-group {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #fff;
+    }
+    .gender-group input {
+      margin-right: 6px;
+      accent-color: #3498db;
+    }
+
+    /* Submit Button */
+    .register-form button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #3498db, #2ecc71);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .register-form button:hover {
+      background: linear-gradient(135deg, #2ecc71, #3498db);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+
+    /* Error Messages */
+    .error-msg {
+      font-size: 12px;
+      color: #ff4d4d;
+      display: none;
+      margin-top: -6px;
+      margin-bottom: 8px;
+    }
+
+    /* Footer Link */
+    .form-footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #ddd;
+    }
+    .form-footer a {
+      color: #00c6ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="register-form">
+    <h2>Create Your Breathewell Account</h2>
+    <form id="registrationForm" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Full Name" value="{{ request.POST.username }}" required>
+      <input type="number" name="age" placeholder="Enter your Life Stage" value="{{ request.POST.age }}" min="0" required>
+
+      <div class="gender-group">
+        <label><input type="radio" name="gender" value="M" {% if request.POST.gender == "M" %}checked{% endif %} required> Male</label>
+        <label><input type="radio" name="gender" value="F" {% if request.POST.gender == "F" %}checked{% endif %}> Female</label>
+        <label><input type="radio" name="gender" value="O" {% if request.POST.gender == "O" %}checked{% endif %}> Other</label>
+      </div>
+
+      <input type="email" name="email" placeholder="Please enter a valid email" value="{{ request.POST.email }}" required>
+      <span class="error-msg" id="emailError">Please enter a valid email.</span>
+
+      <input type="text" name="phone" placeholder="Phone Number " 
+        value="{{ request.POST.phone }}" 
+        pattern="\d{10}" 
+        maxlength="10" 
+        minlength="10" 
+        oninput="this.value=this.value.replace(/[^0-9]/g,'');" 
+        required>
+      <span class="error-msg" id="phoneError">Phone number must be exactly 10 digits!</span>
+
+      <textarea name="address" placeholder="Address" required>{{ request.POST.address }}</textarea>
+      <input type="password" name="password" placeholder="Password (min 6 chars)" minlength="6" required>
+      <span class="error-msg" id="passwordError">Password must be at least 6 characters.</span>
+
+      <input type="file" name="image" accept="image/*">
+
+      <button type="submit">Register</button>
+    </form>
+
+    <div class="form-footer">
+      Already have an account? <a href="{% url 'login' %}">Sign in</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+
+    form.addEventListener('submit', function(e) {
+      let valid = true;
+
+      // Phone validation
+      const phone = form.phone.value.trim();
+      const phoneError = document.getElementById('phoneError');
+      if (!/^\d{10}$/.test(phone)) {
+        phoneError.style.display = 'block';
+        valid = false;
+      } else {
+        phoneError.style.display = 'none';
+      }
+
+      // Password validation
+      const password = form.password.value.trim();
+      const passwordError = document.getElementById('passwordError');
+      if (password.length < 6) {
+        passwordError.style.display = 'block';
+        valid = false;
+      } else {
+        passwordError.style.display = 'none';
+      }
+
+      // Email validation
+      const email = form.email.value.trim();
+      const emailError = document.getElementById('emailError');
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        emailError.style.display = 'block';
+        valid = false;
+      } else {
+        emailError.style.display = 'none';
+      }
+
+      if (!valid) e.preventDefault();
+    });
+  </script>
+</body>
+</html>
