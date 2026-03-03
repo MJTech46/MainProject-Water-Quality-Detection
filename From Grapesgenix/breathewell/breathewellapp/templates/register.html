@@ -3,12 +3,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Patient Registration | Breathewell</title>
+  <title>User Registration | Water Quality System</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap');
 
-    /* Body & Background */
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
@@ -21,7 +21,6 @@
       position: relative;
     }
 
-    /* Dark overlay */
     body::before {
       content: "";
       position: absolute;
@@ -30,67 +29,87 @@
       z-index: 0;
     }
 
-    /* Registration Card */
     .register-form {
       position: relative;
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(12px);
-      padding: 28px 32px;
+      padding: 30px 34px;
       border-radius: 18px;
       box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-      width: 340px;
+      width: 360px;
       max-width: 95%;
       z-index: 1;
-      animation: fadeInUp 0.9s ease;
+      animation: fadeInUp 0.8s ease;
     }
 
     @keyframes fadeInUp {
-      0% {opacity:0; transform: translateY(30px);}
-      100% {opacity:1; transform: translateY(0);}
+      from {opacity:0; transform: translateY(30px);}
+      to {opacity:1; transform: translateY(0);}
     }
 
-    /* Title */
     .register-form h2 {
       text-align: center;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
       color: #fff;
       font-weight: 600;
       font-size: 22px;
-      letter-spacing: 0.5px;
     }
 
-    /* Inputs & Textarea */
-    .register-form input, .register-form textarea {
+    .register-form input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 11px 12px;
       margin: 8px 0 14px 0;
       border-radius: 8px;
       border: none;
       background: rgba(255,255,255,0.95);
       font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .register-form input:focus {
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 8px rgba(52,152,219,0.6);
+    }
+
+    /* Modern Gender Toggle */
+    .gender-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .gender-option {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .gender-option input {
+      display: none;
+    }
+
+    .gender-option span {
+      display: block;
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.85);
+      font-size: 14px;
+      font-weight: 500;
       transition: all 0.3s ease;
     }
 
-    .register-form input:focus, .register-form textarea:focus {
-      outline: none;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(52,152,219,0.5);
+    .gender-option span:hover {
+      background: #ffffff;
     }
 
-    /* Gender */
-    .gender-group {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 16px;
-      font-size: 14px;
+    .gender-option input:checked + span {
+      background: linear-gradient(135deg, #3498db, #2ecc71);
       color: #fff;
-    }
-    .gender-group input {
-      margin-right: 6px;
-      accent-color: #3498db;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      transform: scale(1.05);
     }
 
-    /* Submit Button */
     .register-form button {
       width: 100%;
       padding: 12px;
@@ -101,15 +120,14 @@
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: 0.3s;
     }
+
     .register-form button:hover {
-      background: linear-gradient(135deg, #2ecc71, #3498db);
       transform: translateY(-2px);
       box-shadow: 0 6px 18px rgba(0,0,0,0.3);
     }
 
-    /* Error Messages */
     .error-msg {
       font-size: 12px;
       color: #ff4d4d;
@@ -118,103 +136,123 @@
       margin-bottom: 8px;
     }
 
-    /* Footer Link */
     .form-footer {
       margin-top: 14px;
       text-align: center;
       font-size: 13px;
       color: #ddd;
     }
+
     .form-footer a {
       color: #00c6ff;
       text-decoration: none;
       font-weight: 500;
     }
+
     .form-footer a:hover {
       text-decoration: underline;
     }
 
   </style>
 </head>
+
 <body>
-  <div class="register-form">
-    <h2>Create Your Breathewell Account</h2>
-    <form id="registrationForm" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="text" name="username" placeholder="Full Name" value="{{ request.POST.username }}" required>
-      <input type="number" name="age" placeholder="Enter your Life Stage" value="{{ request.POST.age }}" min="0" required>
 
-      <div class="gender-group">
-        <label><input type="radio" name="gender" value="M" {% if request.POST.gender == "M" %}checked{% endif %} required> Male</label>
-        <label><input type="radio" name="gender" value="F" {% if request.POST.gender == "F" %}checked{% endif %}> Female</label>
-        <label><input type="radio" name="gender" value="O" {% if request.POST.gender == "O" %}checked{% endif %}> Other</label>
-      </div>
+<div class="register-form">
+  <h2>Create Your Account</h2>
 
-      <input type="email" name="email" placeholder="Please enter a valid email" value="{{ request.POST.email }}" required>
-      <span class="error-msg" id="emailError">Please enter a valid email.</span>
+  <form id="registrationForm" method="POST">
+    {% csrf_token %}
 
-      <input type="text" name="phone" placeholder="Phone Number " 
-        value="{{ request.POST.phone }}" 
-        pattern="\d{10}" 
-        maxlength="10" 
-        minlength="10" 
-        oninput="this.value=this.value.replace(/[^0-9]/g,'');" 
-        required>
-      <span class="error-msg" id="phoneError">Phone number must be exactly 10 digits!</span>
+    <input type="text" name="full_name" placeholder="Full Name" required>
 
-      <textarea name="address" placeholder="Address" required>{{ request.POST.address }}</textarea>
-      <input type="password" name="password" placeholder="Password (min 6 chars)" minlength="6" required>
-      <span class="error-msg" id="passwordError">Password must be at least 6 characters.</span>
+    <input type="number" name="age" placeholder="Age" min="1" required>
 
-      <input type="file" name="image" accept="image/*">
+    <!-- Improved Gender Toggle -->
+    <div class="gender-group">
+      <label class="gender-option">
+        <input type="radio" name="gender" value="Male" required>
+        <span>Male</span>
+      </label>
 
-      <button type="submit">Register</button>
-    </form>
-
-    <div class="form-footer">
-      Already have an account? <a href="{% url 'login' %}">Sign in</a>
+      <label class="gender-option">
+        <input type="radio" name="gender" value="Female" required>
+        <span>Female</span>
+      </label>
     </div>
+
+    <input type="email" name="email" placeholder="Email Address" required>
+    <span class="error-msg" id="emailError">Invalid email format.</span>
+
+    <input type="text" name="phone" placeholder="Phone Number"
+      pattern="\d{10}" maxlength="10" minlength="10"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+      required>
+    <span class="error-msg" id="phoneError">Phone number must be 10 digits.</span>
+
+    <input type="password" name="password" placeholder="Password (min 6 characters)" minlength="6" required>
+    <span class="error-msg" id="passwordError">Password must be at least 6 characters.</span>
+
+    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+    <span class="error-msg" id="confirmPasswordError">Passwords do not match.</span>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <div class="form-footer">
+    Already have an account? <a href="{% url 'login' %}">Sign in</a>
   </div>
+</div>
 
-  <script>
-    const form = document.getElementById('registrationForm');
+<script>
+  const form = document.getElementById('registrationForm');
 
-    form.addEventListener('submit', function(e) {
-      let valid = true;
+  form.addEventListener('submit', function(e) {
+    let valid = true;
 
-      // Phone validation
-      const phone = form.phone.value.trim();
-      const phoneError = document.getElementById('phoneError');
-      if (!/^\d{10}$/.test(phone)) {
-        phoneError.style.display = 'block';
-        valid = false;
-      } else {
-        phoneError.style.display = 'none';
-      }
+    const email = form.email.value.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailError = document.getElementById('emailError');
 
-      // Password validation
-      const password = form.password.value.trim();
-      const passwordError = document.getElementById('passwordError');
-      if (password.length < 6) {
-        passwordError.style.display = 'block';
-        valid = false;
-      } else {
-        passwordError.style.display = 'none';
-      }
+    if (!emailPattern.test(email)) {
+      emailError.style.display = 'block';
+      valid = false;
+    } else {
+      emailError.style.display = 'none';
+    }
 
-      // Email validation
-      const email = form.email.value.trim();
-      const emailError = document.getElementById('emailError');
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(email)) {
-        emailError.style.display = 'block';
-        valid = false;
-      } else {
-        emailError.style.display = 'none';
-      }
+    const phone = form.phone.value.trim();
+    const phoneError = document.getElementById('phoneError');
 
-      if (!valid) e.preventDefault();
-    });
-  </script>
+    if (!/^\d{10}$/.test(phone)) {
+      phoneError.style.display = 'block';
+      valid = false;
+    } else {
+      phoneError.style.display = 'none';
+    }
+
+    const password = form.password.value.trim();
+    const confirmPassword = form.confirm_password.value.trim();
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+    if (password.length < 6) {
+      passwordError.style.display = 'block';
+      valid = false;
+    } else {
+      passwordError.style.display = 'none';
+    }
+
+    if (password !== confirmPassword) {
+      confirmPasswordError.style.display = 'block';
+      valid = false;
+    } else {
+      confirmPasswordError.style.display = 'none';
+    }
+
+    if (!valid) e.preventDefault();
+  });
+</script>
+
 </body>
 </html>
