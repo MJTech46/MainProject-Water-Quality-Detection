@@ -4,8 +4,61 @@ from . import models
 from django.http import JsonResponse
 from .models import WaterReading, LatestSensorData, SystemMode
 from django.views.decorators.csrf import csrf_exempt
+import json
+import requests
+import os
+import uuid
+from django.conf import settings
+import base64
 
 
+
+
+@csrf_exempt
+def ai_chat(request):
+
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    messages = json.loads(request.POST.get("messages", "[]"))
+    image = request.FILES.get("image")
+
+    # If image uploaded → convert to base64 data URI
+    if image:
+        img_bytes = image.read()
+        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+        mime = image.content_type
+        data_uri = f"data:{mime};base64,{img_b64}"
+
+        # Add multimodal message
+        messages.append({
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Analyze this water sample image."},
+                {"type": "image_url", "image_url": {"url": data_uri}}
+            ]
+        })
+
+    payload = {
+        "model": "mistralai/ministral-3-3b",
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 512,
+        "stream": False
+    }
+
+    response = requests.post(
+        "http://localhost:1234/v1/chat/completions",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps(payload)
+    )
+
+    data = response.json()
+
+    reply = data["choices"][0]["message"]["content"]
+
+    return JsonResponse({"reply": reply})
 
 @csrf_exempt
 def receive_water_data(request):

@@ -15,4 +15,5 @@ urlpatterns = [
     path('api/set-mode/', views.set_mode),
     path('api/collect-reading/', views.collect_reading),
     path('api/manual-reading/', views.manual_reading),
+    path("api/ai-chat/", views.ai_chat, name="ai_chat"),
 ]
