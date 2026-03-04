@@ -1,6 +1,156 @@
 from django.shortcuts import render,redirect,HttpResponse
-from urllib3 import request
+# from urllib3 import request
 from . import models
+from django.http import JsonResponse
+from .models import WaterReading, LatestSensorData, SystemMode
+from django.views.decorators.csrf import csrf_exempt
+
+
+
+@csrf_exempt
+def receive_water_data(request):
+
+    if request.method == "POST":
+
+        temperature = float(request.POST.get("value1"))
+        tds = float(request.POST.get("value2"))
+        turbidity = float(request.POST.get("value3"))
+        level = float(request.POST.get("value4"))
+        ri = float(request.POST.get("value5"))
+        status = request.POST.get("value6")
+
+        mode = SystemMode.objects.first()
+
+        # If LIVE MODE → store immediately
+        if mode.live_mode:
+
+            WaterReading.objects.create(
+                temperature=temperature,
+                tds=tds,
+                turbidity=turbidity,
+                water_level=level,
+                refactor_index=ri,
+                quality_status=status,
+                active=True
+            )
+
+        # If SINGLE MODE → store temporarily
+        else:
+
+            LatestSensorData.objects.update_or_create(
+                id=1,
+                defaults={
+                    "temperature": temperature,
+                    "tds": tds,
+                    "turbidity": turbidity,
+                    "water_level": level,
+                    "refactor_index": ri,
+                    "quality_status": status
+                }
+            )
+
+        return JsonResponse({"status": "ok"})
+    
+
+
+
+def latest_readings(request):
+
+    readings = WaterReading.objects.filter(
+        active=True
+    ).order_by('-created_at')[:5]
+
+    data = []
+
+    for r in readings:
+        data.append({
+            "id": r.id,
+            "ts": r.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
+            "temp": r.temperature,
+            "tds": r.tds,
+            "turb": r.turbidity,
+            "ri": r.refactor_index,
+        })
+
+    return JsonResponse(data, safe=False)
+
+
+
+@csrf_exempt
+def set_mode(request):
+
+    if request.method == "POST":
+
+        mode_value = request.POST.get("mode")
+
+        mode = SystemMode.objects.first()
+
+        # Create if not exists
+        if mode is None:
+            mode = SystemMode.objects.create(live_mode=True)
+
+        if mode_value == "live":
+            mode.live_mode = True
+        else:
+            mode.live_mode = False
+
+        mode.save()
+
+        return JsonResponse({
+            "mode": "live" if mode.live_mode else "single"
+        })
+    
+
+
+
+
+@csrf_exempt
+def collect_reading(request):
+
+    if request.method == "POST":
+
+        latest = LatestSensorData.objects.first()
+
+        if latest:
+
+            WaterReading.objects.create(
+                temperature=latest.temperature,
+                tds=latest.tds,
+                turbidity=latest.turbidity,
+                water_level=latest.water_level,
+                refactor_index=latest.refactor_index,
+                quality_status=latest.quality_status,
+                active=True
+            )
+
+            return JsonResponse({"status": "collected"})
+
+        return JsonResponse({"status": "no data"})
+
+
+
+@csrf_exempt
+def manual_reading(request):
+
+    if request.method == "POST":
+
+        temp = float(request.POST.get("temperature"))
+        tds = float(request.POST.get("tds"))
+        turb = float(request.POST.get("turbidity"))
+        ri = float(request.POST.get("ri"))
+
+        WaterReading.objects.create(
+            temperature=temp,
+            tds=tds,
+            turbidity=turb,
+            water_level=0,
+            refactor_index=ri,
+            quality_status="MANUAL",
+            active=True
+        )
+
+        return JsonResponse({"status":"saved"})
+
 
 # Create your views here.
 def index(request):
@@ -50,6 +200,9 @@ def login(request):
 
 def userhome(request):
     return render(request, 'userhome.html')
+
+
+
 
 def logout(request):
     request.session.flush()
