@@ -1,820 +1,957 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Water Quality Dashboard</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>DrinkWell — Water Quality</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
+    :root {
+      --bg: #060d1a;
+      --surface: rgba(10, 20, 40, 0.82);
+      --surface2: rgba(15, 28, 56, 0.9);
+      --border: rgba(56, 189, 248, 0.12);
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --r: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: Inter, system-ui;
-      padding: 24px;
-      margin: 0;
-      color: #e2e8f0;
+      font-family: var(--sans);
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND MESH ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
       background:
-        linear-gradient(rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.9)),
-        url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000");
-      background-size: cover;
-      background-attachment: fixed;
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(56,189,248,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(129,140,248,0.07) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2338bdf8' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .container {
-      max-width: 1000px;
-      margin: auto;
+    /* ── LAYOUT ── */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 16px 14px 100px;
     }
 
-    h1 {
-      font-size: 22px;
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-family: var(--mono);
+      font-size: 17px;
+      font-weight: 700;
       color: #fff;
     }
 
+    .logo-text span { color: var(--accent); }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ── CARD ── */
     .card {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(14px);
-      border-radius: 14px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-      padding: 18px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(16px);
     }
 
-    table {
+    .card-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .card-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── MODE SWITCHER ── */
+    .mode-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mode-pills {
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .mode-pill {
+      flex: 1;
+      text-align: center;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      user-select: none;
+    }
+
+    .mode-pill.active {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: #fff;
+    }
+
+    input[type="radio"].mode-radio { display: none; }
+
+    #collectBtn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .2s, transform .1s;
+    }
+
+    #collectBtn:active { transform: scale(0.96); }
+    #collectBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .form-input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+      color: var(--text);
+      font-family: var(--mono);
       width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
     }
 
-    thead th {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      text-align: left;
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--muted); font-size: 13px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #0ea5a0, #2563eb);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
     }
 
-    tbody td {
-      padding: 10px 12px;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    .submit-btn:active { transform: scale(0.98); }
+
+    .ri-formula {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      line-height: 1.6;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      border-left: 2px solid var(--accent);
+    }
+
+    #liveRI {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    /* ── TABLE → CARD STACKS on mobile ── */
+    .readings-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .reading-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .reading-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      letter-spacing: 0.08em;
+    }
+
+    .reading-body { min-width: 0; }
+
+    .reading-ts {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 6px;
+    }
+
+    .reading-params {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .param-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .reading-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
     }
 
     .badge {
       display: inline-block;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .good {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .moderate {
-      background: rgba(251, 191, 36, 0.15);
-      color: #fbbf24;
-    }
-
-    .poor {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-    }
-
-    button {
-      background: linear-gradient(135deg, #0ea5a0, #2563eb);
-      color: white;
-      border: none;
-      padding: 9px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-right: 10px;
-    }
-
-    input {
-      padding: 8px 10px;
+      padding: 4px 9px;
       border-radius: 6px;
-      border: none;
-      margin-right: 10px;
+      font-weight: 700;
+      font-size: 11px;
+      font-family: var(--mono);
+      white-space: nowrap;
     }
 
-    #chartWrap {
-      height: 360px;
-    }
+    .good    { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .moderate{ background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+    .poor    { background: rgba(239,68,68,0.15);  color: var(--red);   border: 1px solid rgba(239,68,68,0.25); }
 
-
-    .mode-selector {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .mode-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .ai-row-btn {
+      background: rgba(37,99,235,0.2);
+      border: 1px solid rgba(37,99,235,0.35);
+      color: var(--accent2);
+      border-radius: 7px;
+      padding: 5px 8px;
       font-size: 15px;
-      font-weight: 600;
       cursor: pointer;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
+      transition: background .2s;
     }
 
-    .mode-option input {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: #2563eb;
+    .ai-row-btn:active { background: rgba(37,99,235,0.4); }
+
+    /* ── CHART ── */
+    #chartWrap {
+      height: 230px;
+      position: relative;
     }
 
-    #collectBtn {
-      margin-left: auto;
-      background: linear-gradient(135deg, #10b981, #059669);
-    }
-
-    #collectBtn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      background: #555;
-    }
-
-
+    /* ── FAB ── */
     #aiFloatingBtn {
       position: fixed;
-      bottom: 25px;
-      right: 25px;
-      width: 64px;
-      height: 64px;
-      background: #2563eb;
+      bottom: 22px;
+      right: 18px;
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, #2563eb, #6366f1);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 30px;
+      font-size: 26px;
       cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 28px rgba(37,99,235,0.5);
       z-index: 1000;
+      border: none;
+      transition: transform .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* DARK BACKDROP */
+    #aiFloatingBtn:active {
+      transform: scale(0.92);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+    }
 
+    /* ── AI OVERLAY ── */
     #aiOverlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      inset: 0;
+      background: rgba(0,0,0,0.65);
       display: none;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       z-index: 999;
+      padding: 0;
     }
 
-    /* LARGE CHAT WINDOW */
+    #aiOverlay.open { display: flex; }
 
+    /* ── CHAT SHEET (bottom sheet on mobile, centered on desktop) ── */
     #aiChatBox {
-      width: 80%;
-      max-width: 1100px;
-      height: 80vh;
-      background: #0f172a;
-      border-radius: 14px;
+      width: 100%;
+      max-width: 700px;
+      height: 88vh;
+      background: #09111f;
+      border-radius: 18px 18px 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+      animation: slideUp .25s cubic-bezier(.32,1,.32,1);
     }
 
-    /* HEADER */
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (min-width: 600px) {
+      #aiOverlay { align-items: center; padding: 20px; }
+      #aiChatBox { height: 80vh; border-radius: 18px; max-width: 600px; animation: fadeIn .2s; }
+      @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    }
+
+    /* ── DRAG HANDLE ── */
+    .drag-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+      margin: 10px auto 0;
+    }
 
     #aiHeader {
-      background: #1e293b;
-      padding: 14px 18px;
-      font-weight: 600;
+      padding: 10px 16px 12px;
+      font-family: var(--mono);
+      font-weight: 700;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
     }
 
-    /* MESSAGE AREA */
+    .ai-header-left { display: flex; align-items: center; gap: 8px; }
+    .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+    #aiClose {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color .2s;
+    }
+
+    #aiClose:hover { color: var(--text); }
 
     #aiMessages {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
-      font-size: 15px;
-      line-height: 1.5;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* MESSAGE STYLES */
-
     .aiMsgUser {
-      text-align: right;
-      margin-bottom: 14px;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .aiMsgUser .bubble {
+      background: linear-gradient(135deg, #1d4ed8, #4338ca);
+      color: #fff;
+      border-radius: 14px 14px 3px 14px;
+      padding: 10px 14px;
+      max-width: 85%;
+      font-size: 13px;
+      white-space: pre-wrap;
     }
 
     .aiMsgBot {
-      text-align: left;
-      margin-bottom: 14px;
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 12px;
     }
 
-    /* INPUT AREA */
+    .aiMsgBot .bubble {
+      background: rgba(30,41,59,0.9);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 14px 14px 14px 3px;
+      padding: 10px 14px;
+      max-width: 90%;
+      font-size: 13px;
+    }
+
+    .aiMsgBot .bubble p { margin-bottom: 6px; }
+    .aiMsgBot .bubble p:last-child { margin-bottom: 0; }
+    .aiMsgBot .bubble ul { padding-left: 18px; }
+    .aiMsgBot .bubble strong { color: var(--accent); }
+
+    .aiLoading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-style: italic;
+      font-size: 13px;
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+
+    .aiSpinner {
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top: 2px solid var(--accent);
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     #aiInputArea {
       display: flex;
+      flex-direction: column;
       gap: 8px;
-      padding: 14px;
-      background: #020617;
+      padding: 12px 14px;
+      background: #060d1a;
+      border-top: 1px solid var(--border);
+    }
+
+    .ai-text-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
     #aiInput {
       flex: 1;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
+      padding: 10px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
       font-size: 14px;
+      color: var(--text);
+      font-family: var(--sans);
+      outline: none;
+      transition: border-color .2s;
     }
+
+    #aiInput:focus { border-color: var(--accent); }
 
     #aiSend {
       padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #6366f1);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .2s;
     }
 
+    #aiSend:disabled { opacity: 0.4; }
 
-
-    .aiLoading {
-      color: #94a3b8;
-      font-style: italic;
-      padding: 8px 0;
+    .ai-file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      padding: 4px 0;
     }
 
-    .aiSpinner {
-      border: 3px solid #333;
-      border-top: 3px solid #38bdf8;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      display: inline-block;
-      animation: spin 1s linear infinite;
-      margin-right: 8px;
+    #aiImage { display: none; }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 24px 0;
     }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0)
-      }
-
-      100% {
-        transform: rotate(360deg)
-      }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 400px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
     }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
   </style>
 </head>
-
 <body>
 
-  <div class="container">
+<div class="app">
 
-    <h1>Water Quality Dashboard</h1>
-
-    <!-- MODE CONTROL -->
-
-    <div class="card mode-selector">
-
-      <label class="mode-option">
-        <input type="radio" name="mode" value="live" checked>
-        <span>LIVE MODE</span>
-      </label>
-
-      <label class="mode-option">
-        <input type="radio" name="mode" value="single">
-        <span>SINGLE MODE</span>
-      </label>
-
-      <button id="collectBtn">COLLECT</button>
-
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">💧</div>
+      <div class="logo-text">Drink<span>Well</span></div>
     </div>
-
-    <!-- MANUAL DATA ENTRY -->
-
-    <div class="card">
-
-      <h3>Add Manual Reading</h3>
-
-      <form id="readingForm">
-
-        <input type="number" id="temperature" placeholder="Temperature °C" step="0.1" required>
-
-        <input type="number" id="tds" placeholder="TDS ppm" required>
-
-        <input type="number" id="turbidity" placeholder="Turbidity %" required>
-
-        <button type="submit">Add Reading</button>
-
-      </form>
-
-      <div class="muted" style="margin-top:10px;font-size:14px">
-        Equation Used:<code>RI = 100 × [0.45(Turb/100) + 0.45(1 - TDS/1000) + 0.10(1 - |Temp - 30|/10)]</code>
-      </div>
-
-      <div id="liveRI" style="margin-top:10px;font-weight:600"></div>
-
+    <div class="header-status">
+      <div class="dot"></div>
+      LIVE
     </div>
-
-    <!-- TABLE -->
-
-    <div class="card">
-
-      <h3>Latest Readings</h3>
-
-      <table id="readingsTable">
-
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Timestamp</th>
-            <th>Temperature</th>
-            <th>TDS</th>
-            <th>Turbidity</th>
-            <th>RI</th>
-            <th>AI</th>
-          </tr>
-        </thead>
-
-        <tbody></tbody>
-
-      </table>
-
-    </div>
-
-    <!-- CHART -->
-
-    <div class="card">
-
-      <h3>Trend Chart</h3>
-
-      <div id="chartWrap">
-        <canvas id="trendChart"></canvas>
-      </div>
-
-    </div>
-
   </div>
 
-  <div id="aiFloatingBtn">🤖</div>
+  <!-- MODE SWITCHER -->
+  <div class="card">
+    <div class="card-title">Sensor Mode</div>
+    <div class="mode-row">
+      <div class="mode-pills">
+        <input type="radio" name="mode" value="live" id="modeLive" class="mode-radio" checked>
+        <label class="mode-pill active" for="modeLive">LIVE</label>
 
-  <div id="aiOverlay">
+        <input type="radio" name="mode" value="single" id="modeSingle" class="mode-radio">
+        <label class="mode-pill" for="modeSingle">SINGLE</label>
+      </div>
+      <button id="collectBtn" disabled>COLLECT</button>
+    </div>
+  </div>
 
-    <div id="aiChatBox">
+  <!-- MANUAL ENTRY -->
+  <div class="card">
+    <div class="card-title">Manual Reading</div>
+    <form id="readingForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <span class="form-label">Temperature</span>
+          <input class="form-input" type="number" id="temperature" placeholder="°C" step="0.1" required>
+        </div>
+        <div class="form-group">
+          <span class="form-label">TDS</span>
+          <input class="form-input" type="number" id="tds" placeholder="ppm" required>
+        </div>
+        <div class="form-group">
+          <span class="form-label">Turbidity</span>
+          <input class="form-input" type="number" id="turbidity" placeholder="%" required>
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <span class="form-label">&nbsp;</span>
+          <button type="submit" class="submit-btn">→ ADD</button>
+        </div>
+      </div>
+    </form>
+    <div class="ri-formula">RI = 100 × [0.45(Turb/100) + 0.45(1–TDS/1000) + 0.10(1–|Temp–30|/10)]</div>
+    <div id="liveRI"></div>
+  </div>
 
-      <div id="aiHeader">
+  <!-- READINGS LIST -->
+  <div class="card">
+    <div class="card-title">Latest Readings</div>
+    <div class="readings-list" id="readingsList">
+      <div class="empty">No readings yet</div>
+    </div>
+  </div>
+
+  <!-- TREND CHART -->
+  <div class="card">
+    <div class="card-title">Trend Chart</div>
+    <div id="chartWrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button id="aiFloatingBtn">🤖</button>
+
+<!-- AI OVERLAY -->
+<div id="aiOverlay">
+  <div id="aiChatBox">
+    <div class="drag-handle"></div>
+    <div id="aiHeader">
+      <div class="ai-header-left">
+        <div class="ai-dot"></div>
         AI Water Quality Assistant
-        <span id="aiClose" style="cursor:pointer">✕</span>
       </div>
-
-      <div id="aiMessages"></div>
-
-      <div id="aiInputArea">
-
-        <input type="file" id="aiImage" accept="image/*">
-
-        <input type="text" id="aiInput" placeholder="Ask about water quality...">
-
-        <button id="aiSend">Send</button>
-
-      </div>
-
+      <span id="aiClose">✕</span>
     </div>
-
+    <div id="aiMessages"></div>
+    <div id="aiInputArea">
+      <div class="ai-text-row">
+        <input type="text" id="aiInput" placeholder="Ask about water quality…">
+        <button id="aiSend">SEND</button>
+      </div>
+      <label class="ai-file-label">
+        📎 <span id="fileLabel">Attach image (optional)</span>
+        <input type="file" id="aiImage" accept="image/*">
+      </label>
+    </div>
   </div>
-
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <script>
-
-    /* ---------- VARIABLES ---------- */
-
-    let readings = []
-
-    const tbody = document.querySelector("#readingsTable tbody")
-    const liveRI = document.getElementById("liveRI")
-
-    const TDS_MAX = 1000
-    const TEMP_CENTER = 30
-    const TEMP_RANGE = 10
-
-    /* ---------- UTIL ---------- */
-
-    function clamp01(x) {
-      return Math.max(0, Math.min(1, x))
-    }
-
-    /* ---------- RI CALCULATION ---------- */
-
-    function computeRI(temp, tds, turb) {
-
-      let turbFactor = clamp01(turb / 100)
-      let tdsFactor = clamp01(1 - (tds / TDS_MAX))
-      let tempFactor = clamp01(1 - (Math.abs(temp - TEMP_CENTER) / TEMP_RANGE))
-
-      let ri = 100 * (0.45 * turbFactor + 0.45 * tdsFactor + 0.10 * tempFactor)
-
-      return Math.round(Math.max(0, Math.min(100, ri)) * 10) / 10
-
-    }
-
-    /* ---------- RI CATEGORY ---------- */
-
-    function riCategory(ri) {
-
-      if (ri >= 80) return ["Excellent", "good"]
-      if (ri >= 60) return ["Good", "good"]
-      if (ri >= 40) return ["Moderate", "moderate"]
-      return ["Poor", "poor"]
-
-    }
-
-    /* ---------- TABLE ---------- */
-
-    function renderTable() {
-
-      tbody.innerHTML = ""
-
-      readings.slice().reverse().forEach(r => {
-
-        const [label, cls] = riCategory(r.ri)
-
-        const tr = document.createElement("tr")
-
-        tr.innerHTML = `
-<td>${r.id ?? "-"}</td>
-<td>${new Date(r.ts).toLocaleString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })}</td>
-<td>${r.temp.toFixed(1)} °C</td>
-<td>${r.tds} ppm</td>
-<td>${r.turb}%</td>
-<td><span class="badge ${cls}">${r.ri} — ${label}</span></td>
-<td>
-<button onclick='openAIChat(${JSON.stringify(r)})'>🤖</button>
-</td>
-`
-
-        tbody.appendChild(tr)
-
-      })
-
-    }
-
-    /* ---------- CHART ---------- */
-
-    const ctx = document.getElementById("trendChart").getContext("2d")
-
-    const chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Turbidity %",
-            data: [],
-            borderColor: "#38bdf8",
-            tension: 0.3
-          },
-          {
-            label: "TDS ppm",
-            data: [],
-            borderColor: "#fbbf24",
-            tension: 0.3
-          },
-          {
-            label: "RI",
-            data: [],
-            borderColor: "#34d399",
-            tension: 0.3
-          }
-        ]
-      }
-    })
-
-    function updateChart() {
-
-      chart.data.labels = readings.map(r => r.ts)
-
-      chart.data.datasets[0].data = readings.map(r => r.turb)
-      chart.data.datasets[1].data = readings.map(r => r.tds)
-      chart.data.datasets[2].data = readings.map(r => r.ri)
-
-      chart.update()
-
-    }
-
-    /* ---------- FETCH DATA ---------- */
-
-    async function fetchReadings() {
-
-      try {
-
-        const response = await fetch("/api/latest-readings/")
-        const data = await response.json()
-
-        if (!data || data.length === 0) {
-
-          readings = [
-            { ts: "2025-09-01T09:00", temp: 26, tds: 350, turb: 90, ri: 82 },
-            { ts: "2025-09-02T09:00", temp: 30, tds: 600, turb: 70, ri: 61 },
-            { ts: "2025-09-03T09:00", temp: 22, tds: 200, turb: 95, ri: 91 },
-            { ts: "2025-09-04T09:00", temp: 28, tds: 450, turb: 80, ri: 73 },
-            { ts: "2025-09-05T09:00", temp: 27, tds: 320, turb: 85, ri: 84 }
-          ]
-
-        } else {
-
-          readings = data
-
-        }
-
-        renderTable()
-        updateChart()
-
-      } catch (e) {
-
-        console.log("API error")
-
-      }
-
-    }
-
-    /* ---------- AUTO REFRESH ---------- */
-
-    setInterval(fetchReadings, 3000)
-
-    /* ---------- MODE RADIO ---------- */
-
-    document.querySelectorAll('input[name="mode"]').forEach(radio => {
-
-      radio.addEventListener("change", function () {
-
-        fetch("/api/set-mode/", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "mode=" + this.value
-        })
-
-      })
-
-    })
-
-    /* ---------- COLLECT ---------- */
-
-    document.getElementById("collectBtn").onclick = () => {
-
-      fetch("/api/collect-reading/", { method: "POST" })
-
-    }
-
-    /* ---------- MANUAL ENTRY ---------- */
-
-    document.getElementById("readingForm").addEventListener("submit", async function (e) {
-
-      e.preventDefault()
-
-      const temp = parseFloat(document.getElementById("temperature").value)
-      const tds = parseFloat(document.getElementById("tds").value)
-      const turb = parseFloat(document.getElementById("turbidity").value)
-
-      const ri = computeRI(temp, tds, turb)
-
-      liveRI.innerHTML = "Preview RI: " + ri
-
-      await fetch("/api/manual-reading/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `temperature=${temp}&tds=${tds}&turbidity=${turb}&ri=${ri}`
-      })
-
-      fetchReadings()
-
-      this.reset()
-
-    })
-
-
-
-
-    const collectBtn = document.getElementById("collectBtn")
-
-    document.querySelectorAll('input[name="mode"]').forEach(radio => {
-
-      radio.addEventListener("change", function () {
-
-        fetch("/api/set-mode/", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "mode=" + this.value
-        })
-
-        if (this.value === "live") {
-          collectBtn.disabled = true
-        } else {
-          collectBtn.disabled = false
-        }
-
-      })
-
-    })
-
-
-    /* ================= AI CHAT STATE ================= */
-
-let aiMessages = [
-{
-role: "system",
-content: "You are an AI assistant that analyzes water quality and suggests purification improvements. When a user provides you with water quality parameters (temperature, TDS, turbidity, RI), you respond with a brief analysis of the water quality and suggest improvements if needed. Always keep your responses concise and focused on the provided data. in this case, the turbidity is reversed , means higher value like 100% is clear and lower value like 0% is very turbid. RI ≥ 80 → Excellent,RI ≥ 60 → Good,RI ≥ 40 → Moderate,else → Poor. try to add emojis in your response to make it more engaging.and leave a space (newline) between analysis and suggestions."
+</div>
+
+<script>
+/* ─────────────── STATE ─────────────── */
+let readings = []
+const TDS_MAX = 1000, TEMP_CENTER = 30, TEMP_RANGE = 10
+
+/* ─────────────── UTILS ─────────────── */
+const clamp01 = x => Math.max(0, Math.min(1, x))
+
+function computeRI(temp, tds, turb) {
+  return Math.round(Math.max(0, Math.min(100,
+    100 * (0.45 * clamp01(turb/100) + 0.45 * clamp01(1 - tds/TDS_MAX) + 0.10 * clamp01(1 - Math.abs(temp - TEMP_CENTER)/TEMP_RANGE))
+  )) * 10) / 10
 }
-]
 
-let selectedRowData = null
+function riCategory(ri) {
+  if (ri >= 80) return ["Excellent", "good"]
+  if (ri >= 60) return ["Good",      "good"]
+  if (ri >= 40) return ["Moderate",  "moderate"]
+  return              ["Poor",       "poor"]
+}
 
-const overlay = document.getElementById("aiOverlay")
-const aiMessagesDiv = document.getElementById("aiMessages")
-const aiInput = document.getElementById("aiInput")
-const aiSendBtn = document.getElementById("aiSend")
-const aiImageInput = document.getElementById("aiImage")
+function formatTs(ts) {
+  return new Date(ts).toLocaleString(undefined, {
+    month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit'
+  })
+}
 
+/* ─────────────── RENDER READINGS ─────────────── */
+function renderReadings() {
+  const list = document.getElementById('readingsList')
+  if (!readings.length) { list.innerHTML = '<div class="empty">No readings yet</div>'; return }
 
-/* ================= OPEN CHAT FROM TABLE ROW ================= */
+  list.innerHTML = readings.slice().reverse().map(r => {
+    const [label, cls] = riCategory(r.ri)
+    return `
+      <div class="reading-card">
+        <div class="reading-id">#${r.id ?? '—'}</div>
+        <div class="reading-body">
+          <div class="reading-ts">${formatTs(r.ts)}</div>
+          <div class="reading-params">
+            <span class="param-chip">Temperature: ${r.temp.toFixed(1)}°C</span>
+            <span class="param-chip">TDS: ${r.tds} ppm</span>
+            <span class="param-chip">Turbidity: ${r.turb}%</span>
+          </div>
+        </div>
+        <div class="reading-right">
+          <span class="badge ${cls}">RI ${r.ri}<br>${label}</span>
+          <button class="ai-row-btn" onclick='openAIChat(${JSON.stringify(r)})'>🤖</button>
+        </div>
+      </div>`
+  }).join('')
+}
 
-function openAIChat(row){
-
-selectedRowData = row
-overlay.style.display = "flex"
-
-const prompt = `
-Row ID: ${row.id}
-Temperature: ${row.temp} °C
-TDS: ${row.tds} ppm
-Turbidity: ${row.turb} %
-RI: ${row.ri}
-Suggest purification improvements in a short way.`
-
-addMessage(prompt,"user")
-
-aiMessages.push({
-role:"user",
-content:prompt
+/* ─────────────── CHART ─────────────── */
+const ctx = document.getElementById('trendChart').getContext('2d')
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [
+      { label: 'Turbidity %', data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.07)', tension: 0.4, pointRadius: 3 },
+      { label: 'TDS ppm',     data: [], borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.07)',  tension: 0.4, pointRadius: 3 },
+      { label: 'RI',          data: [], borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.07)',  tension: 0.4, pointRadius: 3 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { labels: { color: '#94a3b8', font: { family: 'Space Mono', size: 11 }, boxWidth: 12 } }
+    },
+    scales: {
+      x: { ticks: { color: '#475569', font: { size: 10 }, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+  }
 })
 
-sendAIMessage()
-
+function updateChart() {
+  chart.data.labels = readings.map(r => formatTs(r.ts))
+  chart.data.datasets[0].data = readings.map(r => r.turb)
+  chart.data.datasets[1].data = readings.map(r => r.tds)
+  chart.data.datasets[2].data = readings.map(r => r.ri)
+  chart.update()
 }
 
-
-/* ================= FLOATING BUTTON ================= */
-
-document.getElementById("aiFloatingBtn").onclick = () => {
-overlay.style.display = "flex"
+/* ─────────────── FETCH ─────────────── */
+async function fetchReadings() {
+  try {
+    const res = await fetch('/api/latest-readings/')
+    const data = await res.json()
+    readings = (!data || !data.length) ? [
+      { id:1, ts:'2025-09-01T09:00', temp:26, tds:350, turb:90, ri:82 },
+      { id:2, ts:'2025-09-02T09:00', temp:30, tds:600, turb:70, ri:61 },
+      { id:3, ts:'2025-09-03T09:00', temp:22, tds:200, turb:95, ri:91 },
+      { id:4, ts:'2025-09-04T09:00', temp:28, tds:450, turb:80, ri:73 },
+      { id:5, ts:'2025-09-05T09:00', temp:27, tds:320, turb:85, ri:84 }
+    ] : data
+    renderReadings()
+    updateChart()
+  } catch(e) { console.log('API unavailable — using demo data') }
 }
 
+setInterval(fetchReadings, 1000)
 
-/* ================= CLOSE CHAT ================= */
+/* ─────────────── MODE RADIO ─────────────── */
+const collectBtn = document.getElementById('collectBtn')
 
-document.getElementById("aiClose").onclick = () => {
-overlay.style.display = "none"
-}
-
-
-/* ================= SEND BUTTON ================= */
-
-aiSendBtn.onclick = sendAIMessage
-
-
-/* ================= MAIN AI FUNCTION ================= */
-
-async function sendAIMessage(){
-
-const text = aiInput.value.trim()
-const imageFile = aiImageInput.files[0]
-
-/* If user typed something */
-
-if(text !== ""){
-
-addMessage(text,"user")
-
-aiMessages.push({
-role:"user",
-content:text
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    // Update pill styles
+    document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'))
+    this.labels[0].classList.add('active')
+    // API call
+    fetch('/api/set-mode/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'mode='+this.value })
+    collectBtn.disabled = this.value === 'live'
+  })
 })
 
-aiInput.value = ""
+collectBtn.onclick = () => fetch('/api/collect-reading/', { method:'POST' })
 
-}
-
-/* Disable send button */
-
-aiSendBtn.disabled = true
-
-/* Loading animation */
-
-const loading = document.createElement("div")
-loading.className = "aiLoading"
-loading.innerHTML = '<span class="aiSpinner"></span>AI thinking...'
-
-aiMessagesDiv.appendChild(loading)
-aiMessagesDiv.scrollTop = aiMessagesDiv.scrollHeight
-
-
-try{
-
-/* Prepare request */
-
-const formData = new FormData()
-
-formData.append("messages", JSON.stringify(aiMessages))
-
-if(imageFile){
-formData.append("image", imageFile)
-}
-
-/* Send to Django */
-
-const response = await fetch("/api/ai-chat/",{
-method:"POST",
-body:formData
+/* ─────────────── MANUAL FORM ─────────────── */
+document.getElementById('readingForm').addEventListener('submit', async function(e) {
+  e.preventDefault()
+  const temp = parseFloat(document.getElementById('temperature').value)
+  const tds  = parseFloat(document.getElementById('tds').value)
+  const turb = parseFloat(document.getElementById('turbidity').value)
+  const ri   = computeRI(temp, tds, turb)
+  document.getElementById('liveRI').textContent = `Preview RI: ${ri}`
+  await fetch('/api/manual-reading/', {
+    method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:`temperature=${temp}&tds=${tds}&turbidity=${turb}&ri=${ri}`
+  })
+  fetchReadings()
+  this.reset()
 })
 
-const data = await response.json()
+/* ─────────────── AI CHAT STATE ─────────────── */
+let aiMessages = [{
+  role: 'system',
+  content: `You are an AI assistant analyzing water quality data. When given parameters (temperature, TDS, turbidity, RI), provide a brief analysis and purification suggestions. 
+Note: turbidity is reversed — 100% = clear, 0% = very turbid.
+Scale: RI ≥ 80 = Excellent, RI ≥ 60 = Good, RI ≥ 40 = Moderate, else = Poor.
+Use emojis. Keep responses concise. Add a blank line between analysis and suggestions.`
+}]
 
-loading.remove()
+const overlay     = document.getElementById('aiOverlay')
+const aiMsgsDiv   = document.getElementById('aiMessages')
+const aiInput     = document.getElementById('aiInput')
+const aiSendBtn   = document.getElementById('aiSend')
+const aiImageInput= document.getElementById('aiImage')
 
-const reply = data.reply
+/* ─────────────── OPEN FROM ROW ─────────────── */
+function openAIChat(row) {
+  overlay.classList.add('open')
+  const prompt = `Row ID: ${row.id}\nTemperature: ${row.temp} °C\nTDS: ${row.tds} ppm\nTurbidity: ${row.turb}%\nRI: ${row.ri}\n\nSuggest purification improvements briefly.`
+  addMessage(prompt, 'user')
+  aiMessages.push({ role:'user', content:prompt })
+  sendAIMessage()
+}
 
-/* Save AI reply */
+document.getElementById('aiFloatingBtn').onclick = () => overlay.classList.add('open')
+document.getElementById('aiClose').onclick       = () => overlay.classList.remove('open')
 
-aiMessages.push({
-role:"assistant",
-content:reply
+// Close on backdrop tap
+overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open') })
+
+aiSendBtn.onclick = () => {
+  const text = aiInput.value.trim()
+  if (!text) return
+  addMessage(text, 'user')
+  aiMessages.push({ role:'user', content:text })
+  aiInput.value = ''
+  sendAIMessage()
+}
+
+aiInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSendBtn.click() } })
+
+// Image label update
+aiImageInput.addEventListener('change', function() {
+  document.getElementById('fileLabel').textContent = this.files[0]?.name || 'Attach image (optional)'
 })
 
-addMessage(reply,"bot")
+/* ─────────────── SEND TO BACKEND ─────────────── */
+async function sendAIMessage() {
+  aiSendBtn.disabled = true
+  const loading = document.createElement('div')
+  loading.className = 'aiLoading'
+  loading.innerHTML = '<div class="aiSpinner"></div> Thinking…'
+  aiMsgsDiv.appendChild(loading)
+  aiMsgsDiv.scrollTop = aiMsgsDiv.scrollHeight
 
-/* Clear image input */
+  try {
+    const fd = new FormData()
+    fd.append('messages', JSON.stringify(aiMessages))
+    const imgFile = aiImageInput.files[0]
+    if (imgFile) fd.append('image', imgFile)
 
-aiImageInput.value = ""
+    const res  = await fetch('/api/ai-chat/', { method:'POST', body:fd })
+    const data = await res.json()
+    loading.remove()
+    const reply = data.reply
+    aiMessages.push({ role:'assistant', content:reply })
+    addMessage(reply, 'bot')
+    aiImageInput.value = ''
+    document.getElementById('fileLabel').textContent = 'Attach image (optional)'
+  } catch(err) {
+    loading.textContent = '⚠ AI request failed.'
+  }
 
-}catch(error){
-
-loading.innerText = "AI request failed."
-
+  aiSendBtn.disabled = false
 }
 
-/* Enable button again */
-
-aiSendBtn.disabled = false
-
+/* ─────────────── RENDER MESSAGE ─────────────── */
+function addMessage(text, type) {
+  const wrap   = document.createElement('div')
+  const bubble = document.createElement('div')
+  wrap.className   = type === 'user' ? 'aiMsgUser' : 'aiMsgBot'
+  bubble.className = 'bubble'
+  bubble.innerHTML = type === 'bot' ? marked.parse(text) : text.replace(/</g,'&lt;')
+  wrap.appendChild(bubble)
+  aiMsgsDiv.appendChild(wrap)
+  aiMsgsDiv.scrollTop = aiMsgsDiv.scrollHeight
 }
 
-
-/* ================= MESSAGE RENDER ================= */
-
-function addMessage(text,type){
-
-const msg = document.createElement("div")
-
-msg.className = type === "user" ? "aiMsgUser" : "aiMsgBot"
-
-if(type === "bot"){
-msg.innerHTML = marked.parse(text)
-}else{
-msg.innerText = text
-}
-
-aiMessagesDiv.appendChild(msg)
-
-aiMessagesDiv.scrollTop = aiMessagesDiv.scrollHeight
-
-}
-
-
-    /* ---------- INIT ---------- */
-
-    fetchReadings()
-    collectBtn.disabled = true;
-  </script>
-
+/* ─────────────── INIT ─────────────── */
+fetchReadings()
+</script>
 </body>
-
 </html>

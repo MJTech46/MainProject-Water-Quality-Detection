@@ -1,25 +1,19 @@
+from django.utils import timezone
+from zoneinfo import ZoneInfo
 from django.shortcuts import render,redirect,HttpResponse
-# from urllib3 import request
 from . import models
 from django.http import JsonResponse
 from .models import WaterReading, LatestSensorData, SystemMode
 from django.views.decorators.csrf import csrf_exempt
 import json
 import requests
-import os
-import uuid
 from django.conf import settings
 import base64
 
-
-
-
 @csrf_exempt
 def ai_chat(request):
-
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)
-
     messages = json.loads(request.POST.get("messages", "[]"))
     image = request.FILES.get("image")
 
@@ -27,10 +21,8 @@ def ai_chat(request):
     if image:
         img_bytes = image.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-
         mime = image.content_type
         data_uri = f"data:{mime};base64,{img_b64}"
-
         # Add multimodal message
         messages.append({
             "role": "user",
@@ -39,7 +31,6 @@ def ai_chat(request):
                 {"type": "image_url", "image_url": {"url": data_uri}}
             ]
         })
-
     payload = {
         "model": "mistralai/ministral-3-3b",
         "messages": messages,
@@ -47,36 +38,27 @@ def ai_chat(request):
         "max_tokens": 512,
         "stream": False
     }
-
     response = requests.post(
         "http://localhost:1234/v1/chat/completions",
         headers={"Content-Type": "application/json"},
         data=json.dumps(payload)
     )
-
     data = response.json()
-
     reply = data["choices"][0]["message"]["content"]
-
     return JsonResponse({"reply": reply})
 
 @csrf_exempt
 def receive_water_data(request):
-
     if request.method == "POST":
-
         temperature = float(request.POST.get("value1"))
         tds = float(request.POST.get("value2"))
         turbidity = float(request.POST.get("value3"))
         level = float(request.POST.get("value4"))
         ri = float(request.POST.get("value5"))
         status = request.POST.get("value6")
-
         mode = SystemMode.objects.first()
-
         # If LIVE MODE → store immediately
         if mode.live_mode:
-
             WaterReading.objects.create(
                 temperature=temperature,
                 tds=tds,
@@ -86,10 +68,8 @@ def receive_water_data(request):
                 quality_status=status,
                 active=True
             )
-
         # If SINGLE MODE → store temporarily
         else:
-
             LatestSensorData.objects.update_or_create(
                 id=1,
                 defaults={
@@ -101,61 +81,42 @@ def receive_water_data(request):
                     "quality_status": status
                 }
             )
-
         return JsonResponse({"status": "ok"})
-    
-
-
 
 def latest_readings(request):
-
     readings = WaterReading.objects.filter(
         active=True
     ).order_by('-created_at')[:5]
-
+    readings = reversed(readings)  # Show oldest first
     data = []
-
     for r in readings:
         data.append({
             "id": r.id,
-            "ts": r.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
+            "ts": r.created_at,
             "temp": r.temperature,
             "tds": r.tds,
             "turb": r.turbidity,
             "ri": r.refactor_index,
         })
-
     return JsonResponse(data, safe=False)
-
-
 
 @csrf_exempt
 def set_mode(request):
-
     if request.method == "POST":
-
         mode_value = request.POST.get("mode")
-
         mode = SystemMode.objects.first()
-
         # Create if not exists
         if mode is None:
             mode = SystemMode.objects.create(live_mode=True)
-
         if mode_value == "live":
             mode.live_mode = True
         else:
             mode.live_mode = False
-
         mode.save()
-
         return JsonResponse({
             "mode": "live" if mode.live_mode else "single"
         })
     
-
-
-
 
 @csrf_exempt
 def collect_reading(request):
